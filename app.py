@@ -7,17 +7,28 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        # constants
+        # constants for the whole program
         self.endpoints = constants.ENDPOINTS
         self.display_format = constants.DISPLAY_FORMAT
         self.utc_format = constants.UTC_FORMAT
         self.faction_lookups = constants.FACTION_LOOKUPS
         self.agentfile = constants.AGENT_FILE
 
-        self.player_login = ctk.StringVar()
+        # variables that will be managed by the sync loop 3/20 of rps used
+
+        self.agent_data = {
+            "symbol": ctk.StringVar(),
+            "headquarters": ctk.StringVar(),
+            "starting_faction": ctk.StringVar(),
+            "credits": ctk.StringVar(),
+            "ship_count": ctk.StringVar(),
+        }
+
+        # Will help with readability
         self.player_token = ctk.StringVar()
-        self.player_faction = ctk.StringVar()
-        # Defining the charectoristics of the windows
+
+        # The loop is established immediatly after logging in
+
         self.title("SpaceTrader")
         self.geometry("1920x1080")
         ctk.set_appearance_mode("dark")
@@ -33,13 +44,15 @@ class App(ctk.CTk):
 
         self.pages = {}
 
+        # Making the tabs
         for tab_name, PageClass in tabs:
             self.tab_view.add(tab_name)
             page = PageClass(self.tab_view.tab(tab_name), app=self)
             page.pack(fill="both", expand=True)
             self.pages[tab_name] = page
 
-    # Controls tabs for the login page
-    def login_tab_lock(self):
-        for tab_name in ["Summary"]:
-            self.tab_view.tab(tab_name).configure(state="disabled")
+
+#    # Controls tabs for the login page
+#    def login_tab_lock(self):
+#        for tab_name in ["Summary"]:
+#            self.tab_view.tab(tab_name).configure(state="disabled")
