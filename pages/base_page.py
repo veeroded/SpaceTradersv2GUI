@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 import customtkinter as ctk
 
+# Stops the lsp from breaking
 if TYPE_CHECKING:
     from app import App
 

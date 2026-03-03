@@ -1,10 +1,10 @@
-from __future__ import annotations
-
 import customtkinter as ctk
 from .base_page import BasePage
 import os
+from Utils import data_sync
 import requests
 import json
+import threading
 
 
 class Login(BasePage):
@@ -15,11 +15,14 @@ class Login(BasePage):
 
         self.loginF = ctk.CTkFrame(self)
         self.id_login = ctk.CTkComboBox(
-            self, height=20, variable=self.app.player_login, command=self.login_agent
+            self,
+            height=20,
+            variable=self.app.agent_data["symbol"],
+            command=self.login_agent,
         )
         self.id_login.grid(row=3, column=0, columnspan=2, padx=5, pady=5, sticky="ew")
         self.id_login.bind("<Return>", lambda event: self.login_agent())
-        self.generate_login_combobox(0)
+        self.generate_login_combobox()
 
     def load_player_logins(self):
         known_agents = {}
@@ -35,7 +38,7 @@ class Login(BasePage):
         with open(self.app.agentfile, "w") as json_agents:
             json.dump(known_agents, json_agents)
 
-    def generate_login_combobox(self, value):
+    def generate_login_combobox(self):
         known_agents = self.load_player_logins()
         self.agent_list = sorted(known_agents.keys(), key=str.casefold)
         self.id_login.configure(values=self.agent_list)
@@ -62,36 +65,24 @@ class Login(BasePage):
                 result = response.json()
                 # used to hold the token for later
                 result["data"]["token"] = self.app.player_token.get()
-                self.show_agent_summary(result["data"])
+
+                (
+                    threading.Thread(
+                        target=data_sync,
+                        args=(
+                            self.app,
+                            result["data"]["token"],
+                        ),
+                    )
+                ).start()
+                #                self.show_agent_summary(result["data"])
                 # print(result)
 
                 # -1, so now store the agent name / token for future runs
-                if self.id_login.get() == -1:
+                if self.id_login.get() not in known_agents:
                     self.store_agent_login(result["data"])
-
             else:
                 print("Failed:", response.status_code, response.reason, response.text)
 
         except ConnectionError as ce:
             print("Failed:", ce)
-
-    def show_agent_summary(self, json_result):
-        self.app.login_tab_lock()
-
-        self.app.player_token.set(json_result["token"])
-        self.app.player_login.set(json_result["symbol"])
-        self.app.player_faction.set(
-            self.get_faction_lookups()[json_result["startingFaction"]]
-        )
-        self.app.layer_worth.set(f"{json_result['credits']:n}")
-
-    # Deprectaed
-    def logout_agent(self):
-        tabs.tab(0, state=tk.NORMAL)
-        tabs.tab(1, state=tk.DISABLED)
-        tabs.tab(2, state=tk.DISABLED)
-
-        player_login.set("")
-        player_token.set("")
-
-        tabs.select(0)
