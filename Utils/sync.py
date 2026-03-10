@@ -1,17 +1,36 @@
 from .get_api import contracts_data, agent_data, ships_data
-from .update_data import update_agent
 from time import sleep
 
 
 # Inteneded to be run with in a loop in the background hence the rate limiting
 # Also each block binds the diffent values to stringvars
-def data_sync(target, Bearer):
+def data_sync(target, Bearer) -> None:
+    retry_delay = 5
+    max_delay = 30
+
     while True:
-        lagent_data = agent_data(Bearer)
-        update_agent(target, lagent_data)
-        print(target.agent_data)
+        try:
+            agent(target, Bearer)
+            target.contracts_data = contracts_data(Bearer)
+            target.ships_data = {s["symbol"]: s for s in ships_data(Bearer)}
+            target.after(0, target.pages["Summary"].refresh)
+            retry_delay = 5
+            sleep(retry_delay)
+        except Exception as e:
+            if "429" in str(e) or "rate" in str(e).lower():
+                print(f"Rate limited. Waiting {retry_delay}s...")
+                sleep(retry_delay)
+                retry_delay = min(retry_delay * 2, max_delay)  # exponential backoff
+            else:
+                print(f"Error in data_sync: {e}")
+                print((retry_delay))
+                sleep(retry_delay)
 
-        lcontracts_data = contracts_data(Bearer)
 
-        target.ships_data = ships_data(Bearer)
-        sleep(10)
+def agent(target, Bearer) -> None:
+    data = agent_data(Bearer)
+    target.agent_data_var["symbol"].set(f"Symbol: {data['symbol']}")
+    target.agent_data_var["headquarters"].set(f"Headquarters:{data['headquarters']}")
+    target.agent_data_var["credits"].set(f"Credits: {data['credits']}")
+    target.agent_data_var["starting_faction"].set(f"Faction: {data['startingFaction']}")
+    target.agent_data_var["ship_count"].set(f"Ship Count: {data['shipCount']}")

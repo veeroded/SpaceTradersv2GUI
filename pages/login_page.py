@@ -17,7 +17,7 @@ class Login(BasePage):
         self.id_login = ctk.CTkComboBox(
             self,
             height=20,
-            variable=self.app.agent_data["symbol"],
+            variable=self.app.agent_data_var["symbol"],
             command=self.login_agent,
         )
         self.id_login.grid(row=3, column=0, columnspan=2, padx=5, pady=5, sticky="ew")

@@ -2,7 +2,7 @@ import requests
 from Utils import constants as c
 
 
-def json_request(Bearer, endpoint):
+def json_request(Bearer, endpoint) -> dict:
 
     headers = {"Authorization": f"Bearer {Bearer}"}
 
@@ -12,6 +12,8 @@ def json_request(Bearer, endpoint):
     )
     if response.status_code == 200:
         return response.json()["data"]
+    else:
+        print(response.json())
 
 
 # only have to run once since these / this doesnt change often
@@ -24,13 +26,13 @@ def systems_waypoints_data(Bearer, Waypoint):
 
 
 # Have to update frequently so that the player has up to date data
-def agent_data(Bearer):
+def agent_data(Bearer) -> dict:
     return json_request(Bearer, c.ENDPOINTS["MY_ACCOUNT"])
 
 
-def contracts_data(Bearer):
+def contracts_data(Bearer) -> dict:
     return json_request(Bearer, c.ENDPOINTS["MY_CONTRACTS"])
 
 
-def ships_data(Bearer):
+def ships_data(Bearer) -> dict:
     return json_request(Bearer, c.ENDPOINTS["MY_SHIPS"])

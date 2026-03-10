@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from pages import Login, Summary
+from pages.ship_page import Ship
 from Utils import constants
 
 
@@ -16,13 +17,16 @@ class App(ctk.CTk):
 
         # variables that will be managed by the sync loop 3/20 of rps used
 
-        self.agent_data = {
+        self.agent_data_var = {
             "symbol": ctk.StringVar(),
             "headquarters": ctk.StringVar(),
             "starting_faction": ctk.StringVar(),
             "credits": ctk.StringVar(),
             "ship_count": ctk.StringVar(),
         }
+        self.contracts_data = {}
+        self.ships_data = {}
+        self.selected_ship_var = ctk.StringVar()
 
         # Will help with readability
         self.player_token = ctk.StringVar()
@@ -40,7 +44,7 @@ class App(ctk.CTk):
         self.tab_view.pack(fill="both", expand=True, padx=5, pady=5)
 
         # List of tupples of tab_name and tab
-        tabs = [("Logins", Login), ("Summary", Summary)]
+        tabs = [("Logins", Login), ("Summary", Summary), ("Ship", Ship)]
 
         self.pages = {}
 
