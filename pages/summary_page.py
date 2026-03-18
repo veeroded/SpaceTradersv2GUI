@@ -68,22 +68,24 @@ class Agent_Sum(ctk.CTkFrame):
 
 
 class ShipSummaryTree(CTkTreeview):
-    _COLS = ("Symbol", "Location", "Fuel", "Cooldown")
-    _COL_CFG = {
-        "Symbol": (110, "w"),
-        "Location": (240, "w"),
-        "Fuel": (110, "center"),
-        "Cooldown": (100, "center"),
-    }
-
     def __init__(self, master, **kwargs):
         kwargs.setdefault("show", "headings")
-        super().__init__(master, columns=self._COLS, **kwargs)
+        super().__init__(
+            master,
+            columns=("Symbol", "Location", "Fuel", "Cargo", "Cooldown"),
+            **kwargs,
+        )
 
         self.tag_configure("odd", background="#1c1c1c", foreground="#dce4ee")
         self.tag_configure("even", background="#242424", foreground="#dce4ee")
 
-        for col, (width, anchor) in self._COL_CFG.items():
+        for col, (width, anchor) in [
+            ("Symbol", (110, "w")),
+            ("Location", (240, "w")),
+            ("Fuel", (110, "center")),
+            ("Cargo", (110, "center")),
+            ("Cooldown", (100, "center")),
+        ]:
             self.heading(col, text=col)
             self.column(col, width=width, anchor=anchor)
 
@@ -91,15 +93,16 @@ class ShipSummaryTree(CTkTreeview):
         for row in self.get_children():
             self.delete(row)
         for i, ship in enumerate(ships):
+            # .get so that it doesnt crash and just returns a empty dict
             fuel = ship.get("fuel", {})
+            cargo = ship.get("cargo", {})
             nav = ship.get("nav", {})
             secs = ship.get("cooldown", {}).get("remainingSeconds", 0)
 
-            # If true it then calculates the amount of time in seconds it would take for the journy to be complete
+            # changin the status in the case of it traveling
             if nav.get("status") == "IN_TRANSIT":
                 arrival = nav.get("route", {}).get("arrival", "")
                 try:
-                    # Converting zulu time to utc
                     arr = datetime.fromisoformat(arrival.replace("Z", "+00:00"))
                     secs = max(
                         0, int((arr - datetime.now(timezone.utc)).total_seconds())
@@ -107,6 +110,7 @@ class ShipSummaryTree(CTkTreeview):
                 except (ValueError, AttributeError):
                     pass
 
+            # Adds each ship as a row
             self.insert(
                 "",
                 "end",
@@ -115,21 +119,10 @@ class ShipSummaryTree(CTkTreeview):
                     ship.get("symbol", "—"),
                     self._fmt_location(ship),
                     f"{fuel.get('current', '?')} / {fuel.get('capacity', '?')}",
+                    f"{cargo.get('units', 0)} / {cargo.get('capacity', '?')}",
                     f"{secs}s" if secs > 0 else "Ready",
                 ),
             )
-
-    def selected_ship(self) -> dict | None:
-        iid = self.focus()
-        if not iid:
-            return None
-        symbol, location, fuel, cooldown = self.item(iid, "values")
-        return {
-            "symbol": symbol,
-            "location": location,
-            "fuel": fuel,
-            "cooldown": cooldown,
-        }
 
     @staticmethod
     def _fmt_location(ship: dict) -> str:

@@ -13,7 +13,7 @@ def data_sync(target, Bearer) -> None:
             agent(target, Bearer)
             target.contracts_data = contracts_data(Bearer)
             target.ships_data = {s["symbol"]: s for s in ships_data(Bearer)}
-            target.after(0, target.pages["Summary"].refresh)
+            target.after(0, target.refresh_elements)
             retry_delay = 5
             sleep(retry_delay)
         except Exception as e:
@@ -26,7 +26,7 @@ def data_sync(target, Bearer) -> None:
                 print((retry_delay))
                 sleep(retry_delay)
 
-
+#Defines the loop to manage the agent as alot of the data is stored as stringvars
 def agent(target, Bearer) -> None:
     data = agent_data(Bearer)
     target.agent_data_var["symbol"].set(f"Symbol: {data['symbol']}")

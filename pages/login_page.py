@@ -13,15 +13,18 @@ class Login(BasePage):
 
     def make(self):
 
-        self.loginF = ctk.CTkFrame(self)
         self.id_login = ctk.CTkComboBox(
             self,
             height=20,
             variable=self.app.agent_data_var["symbol"],
-            command=self.login_agent,
         )
         self.id_login.grid(row=3, column=0, columnspan=2, padx=5, pady=5, sticky="ew")
         self.id_login.bind("<Return>", lambda event: self.login_agent())
+
+        self.login_button = ctk.CTkButton(
+            self, text="Confirm", command=self.login_agent
+        )
+        self.login_button.grid(row=3, column=3)
         self.generate_login_combobox()
 
     def load_player_logins(self):

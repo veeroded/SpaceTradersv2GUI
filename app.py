@@ -15,7 +15,7 @@ class App(ctk.CTk):
         self.faction_lookups = constants.FACTION_LOOKUPS
         self.agentfile = constants.AGENT_FILE
 
-        # variables that will be managed by the sync loop 3/20 of rps used
+        # variables that will be managed by the sync loop
 
         self.agent_data_var = {
             "symbol": ctk.StringVar(),
@@ -27,7 +27,7 @@ class App(ctk.CTk):
         self.contracts_data = {}
         self.ships_data = {}
         self.selected_ship_var = ctk.StringVar()
-
+        self.selected_ship = ""
         # Will help with readability
         self.player_token = ctk.StringVar()
 
@@ -55,8 +55,11 @@ class App(ctk.CTk):
             page.pack(fill="both", expand=True)
             self.pages[tab_name] = page
 
-
-#    # Controls tabs for the login page
-#    def login_tab_lock(self):
-#        for tab_name in ["Summary"]:
-#            self.tab_view.tab(tab_name).configure(state="disabled")
+    #Used for refreshing the summary and ship page after the sync loop updates the data
+    def refresh_elements(self):
+        self.pages["Summary"].ship_sum.load(list(self.ships_data.values()))
+        self.pages["Summary"].contract_sum.load(self.contracts_data)
+        if self.selected_ship != "":
+            self.pages["Ship"].Cargo.load(self.ships_data[self.selected_ship])
+            self.pages["Ship"].ActionMenu.load(self.ships_data[self.selected_ship])
+        self.pages["Ship"].bottom_bar.update_ship_selecter_combobox()

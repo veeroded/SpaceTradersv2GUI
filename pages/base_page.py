@@ -16,8 +16,8 @@ class BasePage(ctk.CTkFrame):
         # 2x2 should be enough so long as i use frames
         self.columnconfigure(0, weight=1)
         self.columnconfigure(1, weight=1)
+        self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
-        self.rowconfigure(2, weight=1)
 
         self.make()
 
